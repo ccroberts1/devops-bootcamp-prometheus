@@ -4,3 +4,5 @@ out
 .gradle*
 .DS_Store
 k8s-config/db-secret.yaml
+k8s-config/email-secret.yaml
+k8s-config/slack-secret.yaml

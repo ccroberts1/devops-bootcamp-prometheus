@@ -1,0 +1,52 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: main-rules-alert-config
+  namespace: monitoring
+spec:
+  route:
+    repeatInterval: 30m
+    routes:
+    - receiver: 'slack'
+      matchers:
+      - name: alertname
+        value: MysqlDown
+      - name: alertname
+        value: MysqlTooManyConnections
+      - name: alertname
+        value: JavaTooManyConnections
+    - receiver: 'email'
+      matchers:
+      - name: alertname
+        value: NginxHighHttp4xxErrorRate
+      - name: alertname
+        value: KubernetesStatefulsetDown
+
+  receivers:
+  - name: 'email'
+    emailConfigs:
+    - to: 'caitlin.coy.roberts@gmail.com'
+      from: 'caitlin.coy.roberts@gmail.com'
+      smarthost: 'smtp.gmail.com:587'
+      authUsername: 'caitlin.coy.roberts@gmail.com'
+      authIdentity: 'caitlin.coy.roberts@gmail.com'
+      authPassword:
+       name: gmail-auth
+       key: password
+  - name: 'slack'
+    slackConfigs:
+    - channel: '#prometheus-alerts'
+      sendResolved: false
+      apiURL:
+        name: slack-auth
+        key: slack_url
+      title: '[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] Monitoring Event Notification'
+      text: >-
+        {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }} - `{{ .Labels.severity }}`
+          *Description:* {{ .Annotations.description }}
+          *Graph:* <{{ .GeneratorURL }}|:chart_with_upwards_trend:> *Runbook:* <{{ .Annotations.runbook }}|:spiral_note_pad:>
+          *Details:*
+          {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+          {{ end }}
+        {{ end }}
