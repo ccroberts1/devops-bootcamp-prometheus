@@ -13,3 +13,11 @@ secondary:
   persistence:
     accessModes: ["ReadWriteOnce"]
     storageClass: linode-block-storage
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    labels:
+      release: monitoring-stack
+
